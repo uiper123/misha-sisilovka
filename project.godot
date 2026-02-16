@@ -14,6 +14,18 @@ config/name="MishaSisilovka"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[file_customization]
+
+folder_colors={
+"res://_core/": "purple",
+"res://assets/": "teal",
+"res://components/": "blue",
+"res://entities/": "orange",
+"res://gui/": "pink",
+"res://levels/": "green",
+"res://resources/": "red"
+}
+
 [physics]
 
 3d/physics_engine="Jolt Physics"
