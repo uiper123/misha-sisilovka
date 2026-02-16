@@ -6,8 +6,10 @@ extends CharacterBody3D
 @onready var spring_arm: SpringArm3D = $CameraPivot/SpringArm3D
 @onready var radial_menu: Control = %RadialMenu
 @onready var dance_state: Node = $StateMachine/Dance
+@onready var interaction_controller: Node3D = $InteractionController
 
 @onready var model: Node3D = $Model
+@onready var skeleton: Skeleton3D = $Model/Scene/Armature/Skeleton3D
 
 @export var mouse_sensitivity: float = 0.005
 @export_group("Zoom")
@@ -16,9 +18,23 @@ extends CharacterBody3D
 @export var zoom_speed: float = 0.5
 @export var zoom_smoothness: float = 10.0
 
+@export_group("Upper Body")
+## How much the spine tilts based on camera pitch (0 = none, 1 = full)
+@export var spine_pitch_influence: float = 0.4
+## Maximum spine tilt angle in degrees
+@export var spine_pitch_max: float = 35.0
+
+@export_group("Stats")
+@export var base_speed: float = 5.0
+var speed_multiplier: float = 1.0
+
 var target_zoom: float = 3.0
 var _cam_yaw: float = 0.0
 var _cam_pitch: float = 0.0
+
+# Spine bone index (cached)
+var _spine2_bone_idx: int = -1
+var _spine2_rest: Transform3D
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -35,14 +51,34 @@ func _ready() -> void:
 	_cam_pitch = camera_pivot.rotation.x
 	
 	radial_menu.animation_selected.connect(_on_dance_selected)
+	
+	if interaction_controller:
+		interaction_controller.item_picked_up.connect(_on_item_picked_up)
+		interaction_controller.item_dropped.connect(_on_item_dropped)
+	
+	# Cache spine bone index
+	if skeleton:
+		_spine2_bone_idx = skeleton.find_bone("Spine2")
+		if _spine2_bone_idx >= 0:
+			_spine2_rest = skeleton.get_bone_rest(_spine2_bone_idx)
+
+func _on_item_picked_up(item: PickableItem) -> void:
+	if item.weight > 0:
+		var weight_factor = clamp(item.weight / 20.0, 0.0, 0.8)
+		speed_multiplier = 1.0 - weight_factor
+		print("Player: Speed reduced to ", speed_multiplier * 100, "% due to weight: ", item.weight, "kg")
+	else:
+		speed_multiplier = 1.0
+
+func _on_item_dropped(_item: PickableItem) -> void:
+	speed_multiplier = 1.0
+	print("Player: Speed restored")
 
 func _physics_process(delta: float) -> void:
-	# Update camera position to follow player (with offset)
-	# Original offset was (0, 1.5, 0) relative to player
-	# We use a lower offset (1.2) to aim more at the chest/shoulders
 	camera_pivot.global_position = global_position + Vector3(0, 1.2, 0)
 	
 	_align_model_with_floor(delta)
+	_update_spine_pitch(delta)
 
 func _align_model_with_floor(delta: float) -> void:
 	if not model:
@@ -52,8 +88,6 @@ func _align_model_with_floor(delta: float) -> void:
 	if is_on_floor():
 		target_normal = get_floor_normal()
 	
-	# Clamp the tilt angle (max 30 degrees)
-	# This prevents extreme leaning on steep slopes
 	var max_tilt = deg_to_rad(30.0)
 	var angle_to_up = target_normal.angle_to(Vector3.UP)
 	
@@ -61,18 +95,12 @@ func _align_model_with_floor(delta: float) -> void:
 		var axis = Vector3.UP.cross(target_normal).normalized()
 		target_normal = Vector3.UP.rotated(axis, max_tilt)
 
-	# We want the model's Y axis to align with target_normal
-	# But we want to preserve the model's forward direction (relative to character rotation)
-	
 	var current_transform = model.global_transform
 	var desired_up = target_normal
 	
-	# Interpolate Up vector (Slower speed for smoother movement)
 	var current_up = current_transform.basis.y
 	var next_up = current_up.lerp(desired_up, delta * 5.0).normalized()
 	
-	# Calculate the new basis
-	# Simple quaternion rotation from current up to next up
 	var axis = current_up.cross(next_up)
 	if axis.length_squared() < 0.0001:
 		return
@@ -80,14 +108,39 @@ func _align_model_with_floor(delta: float) -> void:
 	axis = axis.normalized()
 	var angle = current_up.angle_to(next_up)
 	
-	model.global_rotate(axis, angle) 
+	model.global_rotate(axis, angle)
+
+## Tilt the upper body (Spine2 bone) based on camera pitch
+func _update_spine_pitch(_delta: float) -> void:
+	if not skeleton or _spine2_bone_idx < 0:
+		return
+	
+	# Only tilt during these states — skip Dance, Attack, WakeUp, Jump, Fall
+	var allowed_states = ["Idle", "Walk", "Crouch"]
+	var current_state_name = ""
+	if state_machine and state_machine.current_state:
+		current_state_name = state_machine.current_state.name
+	
+	if current_state_name not in allowed_states:
+		# Reset override when not in allowed state
+		skeleton.set_bone_global_pose_override(_spine2_bone_idx, Transform3D.IDENTITY, 0.0, true)
+		return
+	
+	# Camera pitch: negative = looking down, positive = looking up
+	var target_pitch = _cam_pitch * spine_pitch_influence
+	target_pitch = clamp(target_pitch, deg_to_rad(-spine_pitch_max), deg_to_rad(spine_pitch_max))
+	
+	# Apply as global pose override (doesn't accumulate, blends with animation)
+	var pitch_quat = Quaternion(Vector3.RIGHT, -target_pitch)
+	var current_global_pose = skeleton.get_bone_global_pose(_spine2_bone_idx)
+	var modified_pose = Transform3D(Basis(pitch_quat) * current_global_pose.basis, current_global_pose.origin)
+	
+	skeleton.set_bone_global_pose_override(_spine2_bone_idx, modified_pose, 0.5, true)
 
 func _on_dance_selected(anim_name: String) -> void:
-	# Only allow dancing if on floor
 	if not is_on_floor():
 		return
 		
-	# Transition to Dance State
 	state_machine.on_child_transition(state_machine.current_state, "dance")
 	dance_state.play_dance(anim_name)
 
@@ -102,7 +155,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if event.is_action_pressed("open_radial_menu"):
-		# Only open menu if on floor
 		if is_on_floor():
 			radial_menu.open_menu()
 		return
@@ -130,7 +182,7 @@ func _handle_camera_rotation(event: InputEventMouseMotion) -> void:
 	
 	camera_pivot.rotation.y = _cam_yaw
 	camera_pivot.rotation.x = _cam_pitch
-	camera_pivot.rotation.z = 0 # Force no roll
+	camera_pivot.rotation.z = 0
 
 
 # This script handles Inputs that are global to the character (like camera look),

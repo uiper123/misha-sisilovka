@@ -12,6 +12,7 @@
 [ext_resource type="Script" uid="uid://dqk58q24xwnbv" path="res://entities/player/states/attack_state.gd" id="10_attack"]
 [ext_resource type="Script" uid="uid://re2fk0lhp6yr" path="res://entities/player/states/fall_state.gd" id="11_fall"]
 [ext_resource type="Script" uid="uid://dfacu64fo5vip" path="res://entities/player/states/wake_up_state.gd" id="12_wakeup"]
+[ext_resource type="Script" uid="uid://d326a6jfqqwmu" path="res://entities/player/interaction_controller.gd" id="13_interaction"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.19580078
@@ -28,24 +29,58 @@ shape = SubResource("CapsuleShape3D_1")
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 
 [node name="Skeleton3D" parent="Model/Scene/Armature" parent_id_path=PackedInt32Array(1515195263, 1910136443) index="0" unique_id=230136812]
-bones/0/position = Vector3(-0.0003543687, 0.02562648, 0.060698196)
-bones/0/rotation = Quaternion(0.3126451, -0.007333256, -0.005801071, 0.94982404)
-bones/1/rotation = Quaternion(0.06965104, 0.0013768941, -0.0096092075, 0.99752426)
-bones/2/rotation = Quaternion(0.19194785, 0.004592111, -0.009769187, 0.98134583)
-bones/3/rotation = Quaternion(0.1955882, 0.0022255522, -0.0057713366, 0.9806667)
-bones/4/rotation = Quaternion(-0.021828135, -0.018267523, 0.027628243, 0.999213)
-bones/6/rotation = Quaternion(0.57024354, 0.4165875, -0.58956605, 0.39203194)
-bones/7/rotation = Quaternion(0.36599827, 0.1717657, 0.19900356, 0.8927146)
-bones/8/rotation = Quaternion(0.0032498706, -0.00080048386, 0.62394756, 0.78145903)
-bones/10/rotation = Quaternion(0.6051776, -0.3152691, 0.624339, 0.38021895)
-bones/11/rotation = Quaternion(0.36158973, -0.23627332, -0.023849621, 0.9015869)
-bones/12/rotation = Quaternion(0.003722795, 0.00040971301, -0.70454633, 0.70964813)
-bones/14/rotation = Quaternion(0.42433202, 0.38674998, 0.809915, 0.120019004)
-bones/15/rotation = Quaternion(-0.19916587, 0.05082921, -0.024051681, 0.9783512)
-bones/16/rotation = Quaternion(0.24922551, -0.06872289, 0.2173336, 0.94123846)
-bones/18/rotation = Quaternion(-0.14791153, 0.37574124, 0.9139754, -0.03987059)
-bones/19/rotation = Quaternion(-0.09798639, -0.072163776, 0.026405098, 0.99221665)
-bones/20/rotation = Quaternion(0.3712822, 0.103303455, -0.104973614, 0.9167652)
+bones/0/position = Vector3(-0.0022614251, 0.014203608, 0.5151287)
+bones/0/rotation = Quaternion(0.65198904, 0.00078530045, 0.019292267, 0.75798255)
+bones/1/rotation = Quaternion(0.029972931, -0.018633163, -0.03714572, 0.9986865)
+bones/2/rotation = Quaternion(0.051455025, -0.00688527, 0.004209704, 0.99864274)
+bones/3/rotation = Quaternion(0.025547188, -0.008339772, 0.008646619, 0.9996014)
+bones/4/rotation = Quaternion(-0.022153527, 0.013720674, 0.025745733, 0.99932885)
+bones/6/rotation = Quaternion(0.602043, 0.41567355, -0.5305723, 0.42808056)
+bones/7/rotation = Quaternion(0.459662, 0.12322398, 0.053777415, 0.87785804)
+bones/8/rotation = Quaternion(0.00544558, -0.02855383, 0.1607926, 0.9865601)
+bones/10/rotation = Quaternion(0.63315004, -0.3787995, 0.5345168, 0.41221812)
+bones/11/rotation = Quaternion(0.43005696, 0.011870478, 0.046349537, 0.90153307)
+bones/12/rotation = Quaternion(0.004632033, 0.019723492, -0.11288801, 0.99340117)
+bones/14/rotation = Quaternion(0.05442673, -0.042463098, 0.9976007, 0.0052434015)
+bones/15/rotation = Quaternion(-0.09651965, 0.023513269, -0.0074637947, 0.9950254)
+bones/16/rotation = Quaternion(0.5003113, -0.04315137, 0.07540597, 0.8614758)
+bones/18/rotation = Quaternion(-0.13592528, 0.0048646843, 0.9880831, 0.07205939)
+bones/19/rotation = Quaternion(-0.14653544, -0.056270264, 0.012892251, 0.9875196)
+bones/20/rotation = Quaternion(0.49623635, 0.061419934, -0.049064834, 0.86462116)
+
+[node name="RightArmIK" type="SkeletonIK3D" parent="Model/Scene/Armature/Skeleton3D" index="0" unique_id=740699789]
+root_bone = &"RightArm"
+tip_bone = &"RightHand"
+target_node = NodePath("../../../../../InteractionController/CarryPivot/RightHandTarget")
+
+[node name="LeftArmIK" type="SkeletonIK3D" parent="Model/Scene/Armature/Skeleton3D" index="1" unique_id=1447908862]
+root_bone = &"LeftArm"
+tip_bone = &"LeftHand"
+target_node = NodePath("../../../../../InteractionController/CarryPivot/LeftHandTarget")
+
+[node name="RightHandAttachment" type="BoneAttachment3D" parent="Model/Scene/Armature/Skeleton3D" index="2" unique_id=49182610]
+transform = Transform3D(-0.96303195, -0.11595153, -0.2431651, 0.2583722, -0.14201172, -0.95556325, 0.0762658, -0.9830503, 0.16672242, -0.055162236, 0.008499592, 0.47844195)
+bone_name = "RightHand"
+bone_idx = 18
+
+[node name="WeaponMount" type="Marker3D" parent="Model/Scene/Armature/Skeleton3D/RightHandAttachment" unique_id=496313379]
+transform = Transform3D(1.0430813e-07, 1, 1.1175871e-08, 4.4703484e-08, 0, -0.9999996, -1, 0, 7.4505806e-08, 0.13472515, 0.007717967, 0.02444151)
+
+[node name="CarryAttachment" type="BoneAttachment3D" parent="Model/Scene/Armature/Skeleton3D" index="3" unique_id=1181433544]
+transform = Transform3D(0.9987295, 0.01676024, -0.047525115, -0.04638405, -0.06292031, -0.99694, -0.019699251, 0.9978777, -0.062062964, 0.0025199577, 0.030564817, 0.7419487)
+bone_name = "Spine2"
+bone_idx = 3
+
+[node name="RemoteTransform3D" type="RemoteTransform3D" parent="Model/Scene/Armature/Skeleton3D/CarryAttachment" unique_id=1325787865]
+remote_path = NodePath("../../../../../../InteractionController/CarryPivot")
+
+[node name="LeftHandAttachment" type="BoneAttachment3D" parent="Model/Scene/Armature/Skeleton3D" index="5" unique_id=1661391150]
+transform = Transform3D(0.40771872, 0.16005932, -0.8989694, 0.89879256, -0.24399458, 0.3641955, -0.16105053, -0.9564764, -0.24334113, 0.19057001, 0.0049212445, 0.55449986)
+bone_name = "LeftHand"
+bone_idx = 9
+
+[node name="WeaponMountLeft" type="Marker3D" parent="Model/Scene/Armature/Skeleton3D/LeftHandAttachment" unique_id=1407885073]
+transform = Transform3D(0, -1, 0, 7.450581e-09, 0, 1, -1.0000001, 2.9802322e-08, 0, -0.010242486, 0.095979095, 0.022583455)
 
 [node name="CameraPivot" type="Node3D" parent="." unique_id=1916156475]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
@@ -85,6 +120,21 @@ script = ExtResource("12_wakeup")
 
 [node name="Fall" type="Node" parent="StateMachine" unique_id=913513621]
 script = ExtResource("11_fall")
+
+[node name="InteractionController" type="Node3D" parent="." unique_id=2040212976]
+script = ExtResource("13_interaction")
+
+[node name="CarryPivot" type="Node3D" parent="InteractionController" unique_id=1018904557]
+transform = Transform3D(-0.9987295, -0.016760245, 0.04752503, -0.019699233, 0.99787766, -0.062062602, -0.04638397, -0.062919945, -0.99693996, -0.0025199552, 0.74194866, 0.03056508)
+
+[node name="CarryMarker" type="Marker3D" parent="InteractionController/CarryPivot" unique_id=282564451]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0.4)
+
+[node name="LeftHandTarget" type="Marker3D" parent="InteractionController/CarryPivot" unique_id=534991548]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.25, 0.2, 0.4)
+
+[node name="RightHandTarget" type="Marker3D" parent="InteractionController/CarryPivot" unique_id=1122434288]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.25, 0.2, 0.4)
 
 [node name="RadialMenu" parent="." unique_id=1186767410 instance=ExtResource("8_radial")]
 unique_name_in_owner = true

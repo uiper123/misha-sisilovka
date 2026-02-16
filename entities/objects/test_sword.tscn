@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://bsea4s4jtko5j"]
+
+[ext_resource type="Script" uid="uid://beuex13rbxhqe" path="res://components/pickable_item.gd" id="1_script"]
+[ext_resource type="Material" path="res://assets/materials/grid_orange.tres" id="2_mat"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_sword"]
+size = Vector3(0.22, 0.08, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_blade"]
+albedo_color = Color(0.75, 0.75, 0.8, 1)
+metallic = 0.9
+roughness = 0.2
+
+[node name="TestSword" type="RigidBody3D" unique_id=816668427]
+mass = 2.0
+script = ExtResource("1_script")
+hold_mode = 1
+hold_offset = Vector3(0, 0.3, 0)
+hold_rotation = Vector3(-90, 0, 0)
+weight = 1.5
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1609476541]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.05)
+shape = SubResource("BoxShape3D_sword")
+
+[node name="Blade" type="CSGBox3D" parent="." unique_id=592415947]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.2)
+size = Vector3(0.05, 0.02, 0.7)
+material = SubResource("StandardMaterial3D_blade")
+
+[node name="Guard" type="CSGBox3D" parent="." unique_id=2062302124]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.15)
+size = Vector3(0.2, 0.04, 0.04)
+material = ExtResource("2_mat")
+
+[node name="Handle" type="CSGCylinder3D" parent="." unique_id=166455342]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, -0.3)
+radius = 0.025
+height = 0.25
+material = ExtResource("2_mat")
+
+[node name="Pommel" type="CSGSphere3D" parent="." unique_id=1331688026]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.44)
+radius = 0.04
+material = ExtResource("2_mat")
