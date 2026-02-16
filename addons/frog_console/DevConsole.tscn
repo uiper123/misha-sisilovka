@@ -1,0 +1,48 @@
+[gd_scene load_steps=3 format=3 uid="uid://b45sll5dvit4y"]
+
+[ext_resource type="Script" path="res://addons/frog_console/DevConsole.gd" id="1_mjhgo"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_console_bg"]
+bg_color = Color(0.1, 0.1, 0.1, 0.9)
+border_width_top = 2
+border_color = Color(0.3, 0.3, 0.3, 1.0)
+
+[node name="DevConsole" type="Control" groups=["DevConsole"]]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_mjhgo")
+
+[node name="ConsolePanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -300.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_console_bg")
+
+[node name="VBox" type="VBoxContainer" parent="ConsolePanel"]
+layout_mode = 2
+
+[node name="Log" type="RichTextLabel" parent="ConsolePanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 2
+bbcode_enabled = true
+text = "[color=#888888]Dev Console initialized. Type 'help' for commands.[/color]"
+scroll_following = true
+selection_enabled = true
+
+[node name="Input" type="LineEdit" parent="ConsolePanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Enter command..."
+caret_blink = true
