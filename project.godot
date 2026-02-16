@@ -11,11 +11,13 @@ config_version=5
 [application]
 
 config/name="MishaSisilovka"
+run/main_scene="res://gui/main_menu.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
 
+SceneManager="*res://autoload/scene_manager.gd"
 PhantomCameraManager="*uid://duq6jhf6unyis"
 InputHelper="*uid://cholww48njaeh"
 DevConsoleHandler="*res://addons/frog_console/DevConsoleHandler.gd"

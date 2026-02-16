@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://b1ifcnjgmjm8c" path="res://assets/models/Misha/MISHASSISISISISss.glb" id="9_model"]
 [ext_resource type="Script" uid="uid://dqk58q24xwnbv" path="res://entities/player/states/attack_state.gd" id="10_attack"]
 [ext_resource type="Script" uid="uid://re2fk0lhp6yr" path="res://entities/player/states/fall_state.gd" id="11_fall"]
+[ext_resource type="Script" uid="uid://dfacu64fo5vip" path="res://entities/player/states/wake_up_state.gd" id="12_wakeup"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.19580078
@@ -27,24 +28,24 @@ shape = SubResource("CapsuleShape3D_1")
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 
 [node name="Skeleton3D" parent="Model/Scene/Armature" parent_id_path=PackedInt32Array(1515195263, 1910136443) index="0" unique_id=230136812]
-bones/0/position = Vector3(0.004239529, -0.037369072, 0.45644575)
-bones/0/rotation = Quaternion(0.6053769, -0.2069222, -0.2816629, 0.71510005)
-bones/1/rotation = Quaternion(0.16302708, 0.017769158, -0.001067445, 0.986461)
-bones/2/rotation = Quaternion(0.054967597, 0.0061347117, 0.0008288211, 0.998469)
-bones/3/rotation = Quaternion(0.058692865, 0.0052228966, 0.00483181, 0.99825084)
-bones/4/rotation = Quaternion(0.15319294, 0.03320131, -0.02790689, 0.987244)
-bones/6/rotation = Quaternion(0.69095266, 0.33272478, -0.37558535, 0.52039814)
-bones/7/rotation = Quaternion(0.16749872, -0.4781469, -0.120207496, 0.8537388)
-bones/8/rotation = Quaternion(0.0034558778, -0.0013877806, 0.8156099, 0.5785904)
-bones/10/rotation = Quaternion(0.6194651, -0.40960473, 0.39348415, 0.5419015)
-bones/11/rotation = Quaternion(0.40731338, 0.13922831, -0.36965707, 0.823447)
-bones/12/rotation = Quaternion(0.0026848612, 0.0005712025, -0.7948712, 0.60677207)
-bones/14/rotation = Quaternion(0.11968202, 0.22842933, 0.9459326, -0.19674273)
-bones/15/rotation = Quaternion(-0.42148963, 0.022179034, 0.0069625946, 0.9065352)
-bones/16/rotation = Quaternion(0.5165945, -0.10300209, -0.039937872, 0.84907347)
-bones/18/rotation = Quaternion(-0.08246094, 0.05860502, 0.9901151, 0.09714805)
-bones/19/rotation = Quaternion(-0.4649474, -0.011669751, -0.028949665, 0.8847879)
-bones/20/rotation = Quaternion(0.68633634, 0.119349346, 0.058807354, 0.71501046)
+bones/0/position = Vector3(-0.0003543687, 0.02562648, 0.060698196)
+bones/0/rotation = Quaternion(0.3126451, -0.007333256, -0.005801071, 0.94982404)
+bones/1/rotation = Quaternion(0.06965104, 0.0013768941, -0.0096092075, 0.99752426)
+bones/2/rotation = Quaternion(0.19194785, 0.004592111, -0.009769187, 0.98134583)
+bones/3/rotation = Quaternion(0.1955882, 0.0022255522, -0.0057713366, 0.9806667)
+bones/4/rotation = Quaternion(-0.021828135, -0.018267523, 0.027628243, 0.999213)
+bones/6/rotation = Quaternion(0.57024354, 0.4165875, -0.58956605, 0.39203194)
+bones/7/rotation = Quaternion(0.36599827, 0.1717657, 0.19900356, 0.8927146)
+bones/8/rotation = Quaternion(0.0032498706, -0.00080048386, 0.62394756, 0.78145903)
+bones/10/rotation = Quaternion(0.6051776, -0.3152691, 0.624339, 0.38021895)
+bones/11/rotation = Quaternion(0.36158973, -0.23627332, -0.023849621, 0.9015869)
+bones/12/rotation = Quaternion(0.003722795, 0.00040971301, -0.70454633, 0.70964813)
+bones/14/rotation = Quaternion(0.42433202, 0.38674998, 0.809915, 0.120019004)
+bones/15/rotation = Quaternion(-0.19916587, 0.05082921, -0.024051681, 0.9783512)
+bones/16/rotation = Quaternion(0.24922551, -0.06872289, 0.2173336, 0.94123846)
+bones/18/rotation = Quaternion(-0.14791153, 0.37574124, 0.9139754, -0.03987059)
+bones/19/rotation = Quaternion(-0.09798639, -0.072163776, 0.026405098, 0.99221665)
+bones/20/rotation = Quaternion(0.3712822, 0.103303455, -0.104973614, 0.9167652)
 
 [node name="CameraPivot" type="Node3D" parent="." unique_id=1916156475]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
@@ -54,11 +55,12 @@ spring_length = 3.0
 margin = 0.2
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivot/SpringArm3D" unique_id=123242720]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
+current = true
+near = 0.01
 
 [node name="StateMachine" type="Node" parent="." unique_id=858676449 node_paths=PackedStringArray("initial_state")]
 script = ExtResource("2_sm")
-initial_state = NodePath("Idle")
+initial_state = NodePath("WakeUp")
 
 [node name="Idle" type="Node" parent="StateMachine" unique_id=1801666234]
 script = ExtResource("3_idle")
@@ -77,6 +79,9 @@ script = ExtResource("7_dance")
 
 [node name="Attack" type="Node" parent="StateMachine" unique_id=1751398894]
 script = ExtResource("10_attack")
+
+[node name="WakeUp" type="Node" parent="StateMachine" unique_id=654462318]
+script = ExtResource("12_wakeup")
 
 [node name="Fall" type="Node" parent="StateMachine" unique_id=913513621]
 script = ExtResource("11_fall")

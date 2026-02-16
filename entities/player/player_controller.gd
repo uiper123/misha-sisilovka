@@ -11,7 +11,7 @@ extends CharacterBody3D
 
 @export var mouse_sensitivity: float = 0.005
 @export_group("Zoom")
-@export var zoom_min: float = 1.0
+@export var zoom_min: float = 2.0
 @export var zoom_max: float = 10.0
 @export var zoom_speed: float = 0.5
 @export var zoom_smoothness: float = 10.0
@@ -27,20 +27,20 @@ func _ready() -> void:
 	# Detach camera from player rotation
 	camera_pivot.set_as_top_level(true)
 	
+	# Exclude player from SpringArm collision
+	spring_arm.add_excluded_object(self.get_rid())
+	
 	# Initialize rotation
 	_cam_yaw = camera_pivot.rotation.y
 	_cam_pitch = camera_pivot.rotation.x
 	
 	radial_menu.animation_selected.connect(_on_dance_selected)
 
-	# Force initial animation
-	if animation_player:
-		animation_player.play("StandingW_BriefcaseIdle")
-
 func _physics_process(delta: float) -> void:
 	# Update camera position to follow player (with offset)
 	# Original offset was (0, 1.5, 0) relative to player
-	camera_pivot.global_position = global_position + Vector3(0, 1.5, 0)
+	# We use a lower offset (1.2) to aim more at the chest/shoulders
+	camera_pivot.global_position = global_position + Vector3(0, 1.2, 0)
 	
 	_align_model_with_floor(delta)
 
@@ -95,6 +95,12 @@ func _process(delta: float) -> void:
 	spring_arm.spring_length = lerp(spring_arm.spring_length, target_zoom, delta * zoom_smoothness)
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Special handling for WakeUp state: only allow camera rotation
+	if state_machine.current_state.name == "WakeUp":
+		if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+			_handle_camera_rotation(event)
+		return
+
 	if event.is_action_pressed("open_radial_menu"):
 		# Only open menu if on floor
 		if is_on_floor():
@@ -102,14 +108,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		_cam_yaw -= event.relative.x * mouse_sensitivity
-		_cam_pitch -= event.relative.y * mouse_sensitivity
-		_cam_pitch = clamp(_cam_pitch, deg_to_rad(-90), deg_to_rad(30))
+		_handle_camera_rotation(event)
 		
-		camera_pivot.rotation.y = _cam_yaw
-		camera_pivot.rotation.x = _cam_pitch
-		camera_pivot.rotation.z = 0 # Force no roll
-
 	if event.is_action_pressed("ui_cancel"):
 		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -122,6 +122,15 @@ func _unhandled_input(event: InputEvent) -> void:
 				target_zoom = clamp(target_zoom - zoom_speed, zoom_min, zoom_max)
 			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 				target_zoom = clamp(target_zoom + zoom_speed, zoom_min, zoom_max)
+
+func _handle_camera_rotation(event: InputEventMouseMotion) -> void:
+	_cam_yaw -= event.relative.x * mouse_sensitivity
+	_cam_pitch -= event.relative.y * mouse_sensitivity
+	_cam_pitch = clamp(_cam_pitch, deg_to_rad(-90), deg_to_rad(30))
+	
+	camera_pivot.rotation.y = _cam_yaw
+	camera_pivot.rotation.x = _cam_pitch
+	camera_pivot.rotation.z = 0 # Force no roll
 
 
 # This script handles Inputs that are global to the character (like camera look),
