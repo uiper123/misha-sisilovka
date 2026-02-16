@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cm7sh3nwfjv40"]
 
 [ext_resource type="Material" path="res://assets/materials/grid_dark.tres" id="1_mat"]
-[ext_resource type="PackedScene" path="res://entities/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://b86dale43ed0x" path="res://entities/player/player.tscn" id="2_player"]
 [ext_resource type="Material" path="res://assets/materials/grid_orange.tres" id="3_orange"]
 [ext_resource type="Material" path="res://assets/materials/grid_green.tres" id="4_green"]
 [ext_resource type="Material" path="res://assets/materials/grid_purple.tres" id="5_purple"]

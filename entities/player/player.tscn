@@ -1,54 +1,87 @@
-[gd_scene load_steps=10 format=3 uid="uid://player_scene_uid"]
+[gd_scene format=3 uid="uid://b86dale43ed0x"]
 
-[ext_resource type="Script" path="res://entities/player/player_controller.gd" id="1_controller"]
-[ext_resource type="Script" path="res://entities/player/state_machine.gd" id="2_sm"]
-[ext_resource type="Script" path="res://entities/player/states/idle_state.gd" id="3_idle"]
-[ext_resource type="Script" path="res://entities/player/states/walk_state.gd" id="4_walk"]
-[ext_resource type="Script" path="res://entities/player/states/jump_state.gd" id="5_jump"]
-[ext_resource type="Script" path="res://entities/player/states/crouch_state.gd" id="6_crouch"]
+[ext_resource type="Script" uid="uid://qdj3ym3vewfx" path="res://entities/player/player_controller.gd" id="1_controller"]
+[ext_resource type="Script" uid="uid://ccf5siwunr7vh" path="res://entities/player/state_machine.gd" id="2_sm"]
+[ext_resource type="Script" uid="uid://wlk1bur5p8gv" path="res://entities/player/states/idle_state.gd" id="3_idle"]
+[ext_resource type="Script" uid="uid://7h0tm82tsw4d" path="res://entities/player/states/walk_state.gd" id="4_walk"]
+[ext_resource type="Script" uid="uid://pjaf10xau68r" path="res://entities/player/states/jump_state.gd" id="5_jump"]
+[ext_resource type="Script" uid="uid://c1idk0nctvsq8" path="res://entities/player/states/crouch_state.gd" id="6_crouch"]
+[ext_resource type="Script" uid="uid://o6hqp5nyq81x" path="res://entities/player/states/dance_state.gd" id="7_dance"]
+[ext_resource type="PackedScene" path="res://gui/radial_menu.tscn" id="8_radial"]
+[ext_resource type="PackedScene" uid="uid://b1ifcnjgmjm8c" path="res://assets/models/Misha/MISHASSISISISISss.glb" id="9_model"]
+[ext_resource type="Script" path="res://entities/player/states/attack_state.gd" id="10_attack"]
+[ext_resource type="Script" path="res://entities/player/states/fall_state.gd" id="11_fall"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.19580078
+height = 1.192627
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_Godot_Standard"]
-
-[node name="Player" type="CharacterBody3D"]
+[node name="Player" type="CharacterBody3D" unique_id=398133730]
 script = ExtResource("1_controller")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=607547998]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5708582, 0)
 shape = SubResource("CapsuleShape3D_1")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("CapsuleMesh_1")
+[node name="Model" parent="." unique_id=767676613 instance=ExtResource("9_model")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 
-[node name="CameraPivot" type="Node3D" parent="."]
+[node name="Skeleton3D" parent="Model/Scene/Armature" parent_id_path=PackedInt32Array(767676613, 743868575) index="0" unique_id=1723734030]
+bones/0/position = Vector3(-0.0022614251, 0.014203608, 0.5151287)
+bones/0/rotation = Quaternion(0.65198904, 0.00078530045, 0.019292267, 0.75798255)
+bones/1/rotation = Quaternion(0.029972931, -0.018633163, -0.03714572, 0.9986865)
+bones/2/rotation = Quaternion(0.051455025, -0.00688527, 0.004209704, 0.99864274)
+bones/3/rotation = Quaternion(0.025547188, -0.008339772, 0.008646619, 0.9996014)
+bones/4/rotation = Quaternion(-0.022153527, 0.013720674, 0.025745733, 0.99932885)
+bones/6/rotation = Quaternion(0.602043, 0.41567355, -0.5305723, 0.42808056)
+bones/7/rotation = Quaternion(0.459662, 0.12322398, 0.053777415, 0.87785804)
+bones/8/rotation = Quaternion(0.00544558, -0.02855383, 0.1607926, 0.9865601)
+bones/10/rotation = Quaternion(0.63315004, -0.3787995, 0.5345168, 0.41221812)
+bones/11/rotation = Quaternion(0.43005696, 0.011870478, 0.046349537, 0.90153307)
+bones/12/rotation = Quaternion(0.004632033, 0.019723492, -0.11288801, 0.99340117)
+bones/14/rotation = Quaternion(0.05442673, -0.042463098, 0.9976007, 0.0052434015)
+bones/15/rotation = Quaternion(-0.09651965, 0.023513269, -0.0074637947, 0.9950254)
+bones/16/rotation = Quaternion(0.5003113, -0.04315137, 0.07540597, 0.8614758)
+bones/18/rotation = Quaternion(-0.13592528, 0.0048646843, 0.9880831, 0.07205939)
+bones/19/rotation = Quaternion(-0.14653544, -0.056270264, 0.012892251, 0.9875196)
+bones/20/rotation = Quaternion(0.49623635, 0.061419934, -0.049064834, 0.86462116)
+
+[node name="CameraPivot" type="Node3D" parent="." unique_id=1916156475]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 
-[node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot"]
+[node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot" unique_id=1594130151]
 spring_length = 3.0
 margin = 0.2
 
-[node name="Camera3D" type="Camera3D" parent="CameraPivot/SpringArm3D"]
+[node name="Camera3D" type="Camera3D" parent="CameraPivot/SpringArm3D" unique_id=123242720]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_Godot_Standard")
-}
-
-[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
+[node name="StateMachine" type="Node" parent="." unique_id=858676449 node_paths=PackedStringArray("initial_state")]
 script = ExtResource("2_sm")
 initial_state = NodePath("Idle")
 
-[node name="Idle" type="Node" parent="StateMachine"]
+[node name="Idle" type="Node" parent="StateMachine" unique_id=1801666234]
 script = ExtResource("3_idle")
 
-[node name="Walk" type="Node" parent="StateMachine"]
+[node name="Walk" type="Node" parent="StateMachine" unique_id=704121118]
 script = ExtResource("4_walk")
 
-[node name="Jump" type="Node" parent="StateMachine"]
+[node name="Jump" type="Node" parent="StateMachine" unique_id=1731144318]
 script = ExtResource("5_jump")
 
-[node name="Crouch" type="Node" parent="StateMachine"]
+[node name="Crouch" type="Node" parent="StateMachine" unique_id=1242073075]
 script = ExtResource("6_crouch")
+
+[node name="Dance" type="Node" parent="StateMachine" unique_id=1291842610]
+script = ExtResource("7_dance")
+
+[node name="Attack" type="Node" parent="StateMachine" unique_id=1751398894]
+script = ExtResource("10_attack")
+
+[node name="Fall" type="Node" parent="StateMachine"]
+script = ExtResource("11_fall")
+
+[node name="RadialMenu" parent="." unique_id=1186767410 instance=ExtResource("8_radial")]
+unique_name_in_owner = true
+
+[editable path="Model"]

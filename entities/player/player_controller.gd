@@ -1,9 +1,11 @@
 extends CharacterBody3D
 
-@onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var animation_player: AnimationPlayer = $Model/AnimationPlayer
 @onready var state_machine: StateMachine = $StateMachine
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var spring_arm: SpringArm3D = $CameraPivot/SpringArm3D
+@onready var radial_menu: Control = %RadialMenu
+@onready var dance_state: Node = $StateMachine/Dance
 
 @export var mouse_sensitivity: float = 0.005
 @export_group("Zoom")
@@ -17,13 +19,36 @@ var target_zoom: float = 3.0
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	target_zoom = spring_arm.spring_length
+	
+	# Detach camera from player rotation
+	camera_pivot.set_as_top_level(true)
+	
+	radial_menu.animation_selected.connect(_on_dance_selected)
+
+	# Force initial animation
+	if animation_player:
+		animation_player.play("StandingW_BriefcaseIdle")
+
+func _physics_process(_delta: float) -> void:
+	# Update camera position to follow player (with offset)
+	# Original offset was (0, 1.5, 0) relative to player
+	camera_pivot.global_position = global_position + Vector3(0, 1.5, 0)
+
+func _on_dance_selected(anim_name: String) -> void:
+	# Transition to Dance State
+	state_machine.on_child_transition(state_machine.current_state, "dance")
+	dance_state.play_dance(anim_name)
 
 func _process(delta: float) -> void:
 	spring_arm.spring_length = lerp(spring_arm.spring_length, target_zoom, delta * zoom_smoothness)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("open_radial_menu"):
+		radial_menu.open_menu()
+		return
+
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		rotate_y(-event.relative.x * mouse_sensitivity)
+		camera_pivot.rotate_y(-event.relative.x * mouse_sensitivity)
 		camera_pivot.rotate_x(-event.relative.y * mouse_sensitivity)
 		camera_pivot.rotation.x = clamp(camera_pivot.rotation.x, deg_to_rad(-90), deg_to_rad(30))
 

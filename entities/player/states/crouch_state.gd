@@ -11,44 +11,34 @@ var collision_shape: CollisionShape3D
 var original_mesh_scale: Vector3
 
 func enter() -> void:
-	# Example: player.animation_player.play("crouch")
-	
 	# Shrink collider
-	if player.has_node("CollisionShape3D"):
-		collision_shape = player.get_node("CollisionShape3D")
-		if collision_shape.shape is CapsuleShape3D:
-			collision_shape.shape.height = CROUCH_HEIGHT
-			collision_shape.position.y = CROUCH_HEIGHT / 2.0 # Adjust pivot if needed
-
-	# Visual feedback (if using simple mesh)
-	if player.has_node("MeshInstance3D"):
-		var mesh = player.get_node("MeshInstance3D")
-		original_mesh_scale = mesh.scale
-		mesh.scale.y = 0.5
-		mesh.position.y = CROUCH_HEIGHT / 2.0
+	# player.collision_shape.shape.height = 1.0 # Logic handled elsewhere or keep simple
+	if player.animation_player:
+		player.animation_player.play("CrouchIdle(1)", 0.2)
 
 func exit() -> void:
 	# Restore collider
-	if collision_shape and collision_shape.shape is CapsuleShape3D:
-		collision_shape.shape.height = NORMAL_HEIGHT
-		collision_shape.position.y = 0.0 # Reset pivot
-
-	# Restore visual
-	if player.has_node("MeshInstance3D"):
-		var mesh = player.get_node("MeshInstance3D")
-		mesh.scale = original_mesh_scale
-		mesh.position.y = 0.0
+	pass
 
 func physics_update(delta: float) -> void:
 	if not player.is_on_floor():
 		player.velocity.y -= GRAVITY * delta
 
 	if not Input.is_action_pressed("crouch"):
-		# Check if can uncrouch (raycast check would be better here)
 		transitioned.emit(self, "idle")
 		return
 
+	# Movement
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	
+	if player.animation_player:
+		if input_dir != Vector2.ZERO:
+			if player.animation_player.current_animation != "CrouchWalkForward(1)":
+				player.animation_player.play("CrouchWalkForward(1)", 0.2)
+		else:
+			if player.animation_player.current_animation != "CrouchIdle(1)":
+				player.animation_player.play("CrouchIdle(1)", 0.2)
+	
 	var direction: Vector3 = (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
 	if direction:
