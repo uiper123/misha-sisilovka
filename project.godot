@@ -14,6 +14,15 @@ config/name="MishaSisilovka"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+PhantomCameraManager="*uid://duq6jhf6unyis"
+InputHelper="*uid://cholww48njaeh"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/input_helper/plugin.cfg", "res://addons/phantom_camera/plugin.cfg", "res://addons/proton_scatter/plugin.cfg")
+
 [file_customization]
 
 folder_colors={
@@ -35,3 +44,10 @@ folder_colors={
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+
+[steam]
+
+initialization/app_id=0
+initialization/initialize_on_startup=false
+initialization/embed_callbacks=false
+multiplayer_peer/max_channels=4
