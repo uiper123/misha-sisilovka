@@ -8,14 +8,22 @@ const GRAVITY: float = 9.8
 var is_winding_up: bool = false
 
 func enter() -> void:
-	# Determine if we are sprinting (check input or velocity magnitude)
-	var is_sprinting = Input.is_action_pressed("sprint")
+	# Determine if we are sprinting
+	var is_sprinting = false
+	if is_multiplayer_authority():
+		is_sprinting = Input.is_action_pressed("sprint")
+	else:
+		# Puppet logic: Check horizontal velocity
+		var h_vel = Vector3(player.velocity.x, 0, player.velocity.z).length()
+		is_sprinting = h_vel > 4.5 # Threshold slightly below sprint speed
+		
 	is_winding_up = false
 	
 	if player.animation_player:
 		if is_sprinting:
 			player.animation_player.play("UnarmedJumpRunning", 0.1)
-			player.velocity.y = JUMP_VELOCITY
+			if is_multiplayer_authority():
+				player.velocity.y = JUMP_VELOCITY
 		else:
 			is_winding_up = true
 			player.animation_player.play("JoyfulJump", 0.1)
@@ -26,9 +34,11 @@ func enter() -> void:
 				return
 			
 			is_winding_up = false
-			player.velocity.y = JUMP_VELOCITY
+			if is_multiplayer_authority():
+				player.velocity.y = JUMP_VELOCITY
 	else:
-		player.velocity.y = JUMP_VELOCITY
+		if is_multiplayer_authority():
+			player.velocity.y = JUMP_VELOCITY
 
 func physics_update(delta: float) -> void:
 	if is_winding_up:

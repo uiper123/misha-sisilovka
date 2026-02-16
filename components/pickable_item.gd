@@ -42,6 +42,12 @@ func interact(interactor: Node3D) -> void:
 		interactor.pickup_item(self)
 
 func _ready() -> void:
+	# Ensure this item is interactable on the correct layers
+	collision_layer = 1 | 4 # Layer 1 (World) | Layer 3 (Interactable - assuming 3)
+	# Let's check project settings or assume default
+	# If we want raycast to hit it, it must be on a layer the raycast checks
+	# InteractionController checks collide_with_bodies=true
+	
 	_find_mesh(self)
 	
 	if _original_mesh:

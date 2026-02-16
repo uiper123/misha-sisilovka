@@ -8,6 +8,8 @@
 [ext_resource type="PackedScene" uid="uid://c5y4s3q1j4v7m" path="res://entities/objects/test_box.tscn" id="6_box"]
 [ext_resource type="PackedScene" uid="uid://bsea4s4jtko5j" path="res://entities/objects/test_sword.tscn" id="7_sword"]
 
+[ext_resource type="Script" path="res://levels/level_manager.gd" id="8_manager"]
+
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 
 [sub_resource type="Sky" id="Sky_1"]
@@ -19,6 +21,14 @@ sky = SubResource("Sky_1")
 tonemap_mode = 2
 
 [node name="TestWorld" type="Node3D" unique_id=1687595052]
+script = ExtResource("8_manager")
+player_scene = ExtResource("2_player")
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("res://entities/player/player.tscn")
+spawn_path = NodePath("../Players")
+
+[node name="Players" type="Node3D" parent="."]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1151520818]
 environment = SubResource("Environment_1")
@@ -61,9 +71,6 @@ material = ExtResource("3_orange")
 
 [node name="TestBox" parent="." unique_id=123456789 instance=ExtResource("6_box")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.52316594, 2)
-
-[node name="Player" parent="." unique_id=398133730 instance=ExtResource("2_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
 
 [node name="TestSword" parent="." unique_id=1091170287 instance=ExtResource("7_sword")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9247247, 0.82525134, 1.7372284)

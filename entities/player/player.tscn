@@ -20,12 +20,35 @@
 radius = 0.19580078
 height = 1.1589966
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_1"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:velocity")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath("Model/Scene/Armature/Skeleton3D/LeftArmIK:interpolation")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath("Model/Scene/Armature/Skeleton3D/RightArmIK:interpolation")
+properties/4/spawn = true
+properties/4/replication_mode = 1
+properties/5/path = NodePath("CameraPivot:rotation")
+properties/5/spawn = true
+properties/5/replication_mode = 1
+
 [node name="Player" type="CharacterBody3D" unique_id=398133730]
 script = ExtResource("1_controller")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=607547998]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.58767337, 0)
 shape = SubResource("CapsuleShape3D_1")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_1")
 
 [node name="Model" parent="." unique_id=1515195263 instance=ExtResource("9_model")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)

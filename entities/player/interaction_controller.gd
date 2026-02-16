@@ -237,15 +237,28 @@ func _update_adjust_hud() -> void:
 	_adjust_label.text = text
 
 func _process(_delta: float) -> void:
-	if Input.is_action_just_pressed("interact"):
-		if held_item:
-			drop_item()
-		else:
-			try_pickup_item()
-	
+	# Visual updates that should run on all clients for correctness
 	_update_carry_pivot_height()
-	_update_wall_collision()
-	_update_hover_highlight()
+	
+	# Only authority handles interaction inputs and highlighting
+	if is_multiplayer_authority():
+		if Input.is_action_just_pressed("interact"):
+			if held_item:
+				drop_item()
+			else:
+				try_pickup_item()
+		
+		_update_wall_collision()
+		_update_hover_highlight()
+	else:
+		# Disable highlight on puppets if any was active
+		if _hovered_item:
+			_hovered_item.set_highlight(false)
+			_hovered_item = null
+		
+		var hint_node = get_node_or_null("InteractionUI/InteractionHint")
+		if hint_node:
+			hint_node.visible = false
 
 # ─────────────────────────────────────────────
 # Debug visualization (F3 toggle)
@@ -443,7 +456,9 @@ func _update_carry_pivot_height() -> void:
 # ─────────────────────────────────────────────
 
 func _update_hover_highlight() -> void:
-	var hint_label = $InteractionUI/InteractionHint
+	var hint_label = get_node_or_null("InteractionUI/InteractionHint")
+	if not hint_label: return
+	
 	if held_item:
 		if _hovered_item:
 			_hovered_item.set_highlight(false)
@@ -470,19 +485,36 @@ func _update_hover_highlight() -> void:
 
 func _get_raycast_item() -> PickableItem:
 	var space_state = get_world_3d().direct_space_state
+	
+	# Fix for CAPTURED mouse mode: use screen center
 	var mouse_pos = get_viewport().get_mouse_position()
+	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		mouse_pos = get_viewport().get_visible_rect().size / 2.0
+		
 	var from = camera.project_ray_origin(mouse_pos)
 	var to = from + camera.project_ray_normal(mouse_pos) * interaction_distance
 	
 	var query = PhysicsRayQueryParameters3D.create(from, to)
 	query.collide_with_areas = true
 	query.collide_with_bodies = true
-	query.exclude = [player.get_rid()]
+	# Ensure we check the layers where items are
+	query.collision_mask = 0xFFFFFFFF # Check all layers for now to be safe
+	
+	# Exclude self and held items (and all child colliders like HitboxComponent)
+	var excluded_rids = []
+	_collect_collision_rids(player, excluded_rids)
+	
+	if held_item:
+		excluded_rids.append(held_item.get_rid())
+		_collect_collision_rids(held_item, excluded_rids)
+		
+	query.exclude = excluded_rids
 	
 	var result = space_state.intersect_ray(query)
 	
 	if result:
 		var collider = result.collider
+		# print("Raycast hit: ", collider.name) # Debug print
 		if collider is PickableItem:
 			return collider
 		elif collider.get_parent() is PickableItem:
@@ -490,19 +522,71 @@ func _get_raycast_item() -> PickableItem:
 	
 	return null
 
-# ─────────────────────────────────────────────
-# Pickup logic
-# ─────────────────────────────────────────────
+func _collect_collision_rids(node: Node, arr: Array) -> void:
+	if node is CollisionObject3D:
+		arr.append(node.get_rid())
+	
+	for child in node.get_children():
+		_collect_collision_rids(child, arr)
 
 func try_pickup_item() -> void:
 	var item = _get_raycast_item()
 	if item:
-		item.interact(self)
+		# If multiplayer, verify ownership/authority before picking up?
+		# Actually, items are usually server-owned.
+		# But 'PickableItem' is a RigidBody.
+		# We should check if we can pick it up.
+		# item.interact(self)
+		
+		# Directly call pickup_item to ensure we use our controller logic
+		pickup_item(item)
+	else:
+		# print("No item found to pickup") # Debug print
+		pass
 
 func pickup_item(item: PickableItem) -> void:
 	if held_item:
 		return
 	
+	# Only authority can initiate pickup for synchronization
+	if is_multiplayer_authority():
+		# If we are the server, we just do it and tell others.
+		if multiplayer.is_server():
+			rpc("pickup_rpc", item.get_path())
+			_perform_pickup(item)
+		else:
+			# If we are a client, we tell the server "I want to pick this up"
+			rpc_id(1, "request_pickup_rpc", item.get_path())
+
+@rpc("any_peer", "call_remote", "reliable")
+func request_pickup_rpc(item_path: NodePath) -> void:
+	# Only server should receive this
+	if not multiplayer.is_server():
+		return
+		
+	var item = get_node_or_null(item_path)
+	if item and item is PickableItem:
+		# If someone else is holding it, don't pick it up
+		if item.get_parent() is Marker3D or item.get_parent() is BoneAttachment3D:
+			return
+			
+		# Broadcast pickup to all clients (including the requester)
+		rpc("pickup_rpc", item_path)
+		_perform_pickup(item)
+
+@rpc("any_peer", "call_remote", "reliable")
+func pickup_rpc(item_path: NodePath) -> void:
+	var item = get_node_or_null(item_path)
+	if item and item is PickableItem:
+		# If someone else is holding it, don't pick it up?
+		# Or force steal? Let's check parent
+		if item.get_parent() is Marker3D or item.get_parent() is BoneAttachment3D:
+			# Already held
+			return
+			
+		_perform_pickup(item)
+
+func _perform_pickup(item: PickableItem) -> void:
 	held_item = item
 	
 	item.freeze = true
@@ -594,25 +678,60 @@ func drop_item() -> void:
 	if not held_item:
 		return
 	
-	var item = held_item
-	held_item = null
+	if is_multiplayer_authority():
+		var forward = -camera.global_transform.basis.z
+		var impulse = forward * 5.0
+		
+		if multiplayer.is_server():
+			rpc("drop_rpc", held_item.global_transform, impulse)
+			_perform_drop(held_item, held_item.global_transform, impulse)
+		else:
+			rpc_id(1, "request_drop_with_impulse_rpc", impulse, held_item.global_transform)
+
+@rpc("any_peer", "call_remote", "reliable")
+func request_drop_rpc() -> void:
+	if not multiplayer.is_server(): return
 	
+	if held_item:
+		# Server calculates physics/transform since it has authority over the world
+		# But wait, the client's camera direction matters for impulse.
+		# Ideally client sends impulse vector.
+		# For now, let's just drop it downwards/forwards relative to player model?
+		# Or better: let client send impulse in request.
+		pass
+
+# Revised request_drop
+@rpc("any_peer", "call_remote", "reliable")
+func request_drop_with_impulse_rpc(impulse: Vector3, drop_transform: Transform3D) -> void:
+	if not multiplayer.is_server(): return
+	if held_item:
+		rpc("drop_rpc", drop_transform, impulse)
+		_perform_drop(held_item, drop_transform, impulse)
+
+@rpc("any_peer", "call_remote", "reliable")
+func drop_rpc(final_transform: Transform3D, impulse: Vector3) -> void:
+	if held_item:
+		_perform_drop(held_item, final_transform, impulse)
+
+func _perform_drop(item: PickableItem, final_transform: Transform3D, impulse: Vector3) -> void:
+	held_item = null
 	_stop_ik()
 	
-	var current_global_transform = item.global_transform
-	
+	# Reparent to world root (TestWorld)
 	var world_root = player.get_parent()
+	if world_root.get_parent() is Node3D: # Assuming Players -> TestWorld
+		world_root = world_root.get_parent()
+	
 	item.get_parent().remove_child(item)
 	world_root.add_child(item)
 	
-	item.global_transform = current_global_transform
+	item.global_transform = final_transform
 	
 	item.freeze = false
 	item.collision_layer = 1
 	item.collision_mask = 1
 	
-	var forward = -camera.global_transform.basis.z
-	item.apply_impulse(forward * 5.0)
+	item.apply_impulse(impulse)
 	
 	item_dropped.emit(item)
 

@@ -1,0 +1,53 @@
+[gd_scene format=3 uid="uid://duu34yjhe0d8q"]
+
+[ext_resource type="Script" uid="uid://dchtbr4om7ker" path="res://gui/lobby_menu.gd" id="1_lobby"]
+
+[node name="LobbyMenu" type="Control" unique_id=1906194898]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_lobby")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1878307973]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -50.0
+offset_right = 100.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=1907354661]
+layout_mode = 2
+text = "Multiplayer Lobby"
+horizontal_alignment = 1
+
+[node name="HostButton" type="Button" parent="VBoxContainer" unique_id=1236896491]
+layout_mode = 2
+text = "Host Game"
+
+[node name="IPAddress" type="LineEdit" parent="VBoxContainer" unique_id=822506471]
+layout_mode = 2
+placeholder_text = "127.0.0.1"
+alignment = 1
+
+[node name="PortInput" type="LineEdit" parent="VBoxContainer" unique_id=145547624]
+layout_mode = 2
+placeholder_text = "7000"
+alignment = 1
+
+[node name="JoinButton" type="Button" parent="VBoxContainer" unique_id=1468112911]
+layout_mode = 2
+text = "Join Game"
+
+[connection signal="pressed" from="VBoxContainer/HostButton" to="." method="_on_host_pressed"]
+[connection signal="pressed" from="VBoxContainer/JoinButton" to="." method="_on_join_pressed"]

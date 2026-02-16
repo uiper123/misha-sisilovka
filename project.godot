@@ -23,6 +23,7 @@ InputHelper="*uid://cholww48njaeh"
 DevConsoleHandler="*res://addons/frog_console/DevConsoleHandler.gd"
 PostProcessManager="*res://_core/post_process_manager.tscn"
 Console="*res://addons/frog_console/ConsoleLayer.tscn"
+MultiplayerManager="*res://autoload/multiplayer_manager.gd"
 
 [display]
 
