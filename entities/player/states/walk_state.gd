@@ -57,6 +57,23 @@ func physics_update(delta: float) -> void:
 		
 		var direction = Vector3.FORWARD.rotated(Vector3.UP, player.global_rotation.y)
 		
+		# Sharp Turn Detection
+		if is_sprinting and player.velocity.length() > SPRINT_SPEED * 0.8:
+			var current_dir = player.velocity.normalized()
+			# Ignore Y for direction check
+			current_dir.y = 0
+			current_dir = current_dir.normalized()
+			
+			var new_dir = direction
+			new_dir.y = 0
+			new_dir = new_dir.normalized()
+			
+			var dot = current_dir.dot(new_dir)
+			# If dot is < 0, angle is > 90 degrees (sharp turn)
+			if dot < 0.0:
+				transitioned.emit(self, "stumble")
+				return
+		
 		player.velocity.x = move_toward(player.velocity.x, direction.x * current_speed, ACCELERATION * delta)
 		player.velocity.z = move_toward(player.velocity.z, direction.z * current_speed, ACCELERATION * delta)
 	else:
@@ -67,4 +84,29 @@ func physics_update(delta: float) -> void:
 		if player.velocity.length_squared() < 0.1:
 			transitioned.emit(self, "idle")
 
+	# High Speed Slope/Loss of Control Detection
+	# Check if velocity is significantly higher than normal sprint speed (e.g., from gravity on slopes)
+	# But allow falling (not on floor)
+	if player.is_on_floor() and player.velocity.length() > SPRINT_SPEED * 1.5:
+		transitioned.emit(self, "stumble")
+		return
+
+	# Store velocity before move to detect impact speed correctly
+	var velocity_before_move = player.velocity
 	player.move_and_slide()
+	
+	# Check for wall impact while sprinting
+	# Must have sufficient speed to trigger impact (avoid triggering when just pressing sprint against wall)
+	# Use velocity_before_move because move_and_slide() zeroes velocity on impact
+	if is_sprinting and velocity_before_move.length() > SPRINT_SPEED * 0.5 and player.get_slide_collision_count() > 0:
+		for i in range(player.get_slide_collision_count()):
+			var collision = player.get_slide_collision(i)
+			var normal = collision.get_normal()
+			
+			# Check if it's a wall (vertical surface)
+			if abs(normal.y) < 0.5:
+				# Check if we hit it head-on (dot product < -0.5)
+				var forward = -player.global_transform.basis.z
+				if forward.dot(normal) < -0.5:
+					transitioned.emit(self, "impact")
+					return

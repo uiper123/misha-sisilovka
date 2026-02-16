@@ -13,6 +13,8 @@
 [ext_resource type="Script" uid="uid://re2fk0lhp6yr" path="res://entities/player/states/fall_state.gd" id="11_fall"]
 [ext_resource type="Script" uid="uid://dfacu64fo5vip" path="res://entities/player/states/wake_up_state.gd" id="12_wakeup"]
 [ext_resource type="Script" uid="uid://d326a6jfqqwmu" path="res://entities/player/interaction_controller.gd" id="13_interaction"]
+[ext_resource type="Script" path="res://entities/player/states/impact_state.gd" id="14_impact"]
+[ext_resource type="Script" path="res://entities/player/states/stumble_state.gd" id="15_stumble"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.19580078
@@ -120,6 +122,12 @@ script = ExtResource("12_wakeup")
 
 [node name="Fall" type="Node" parent="StateMachine" unique_id=913513621]
 script = ExtResource("11_fall")
+
+[node name="Impact" type="Node" parent="StateMachine"]
+script = ExtResource("14_impact")
+
+[node name="Stumble" type="Node" parent="StateMachine"]
+script = ExtResource("15_stumble")
 
 [node name="InteractionController" type="Node3D" parent="." unique_id=2040212976]
 script = ExtResource("13_interaction")

@@ -6,7 +6,7 @@
 [ext_resource type="Material" path="res://assets/materials/grid_green.tres" id="4_green"]
 [ext_resource type="Material" path="res://assets/materials/grid_purple.tres" id="5_purple"]
 [ext_resource type="PackedScene" uid="uid://c5y4s3q1j4v7m" path="res://entities/objects/test_box.tscn" id="6_box"]
-[ext_resource type="PackedScene" path="res://entities/objects/test_sword.tscn" id="7_sword"]
+[ext_resource type="PackedScene" uid="uid://bsea4s4jtko5j" path="res://entities/objects/test_sword.tscn" id="7_sword"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 
@@ -67,3 +67,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
 
 [node name="TestSword" parent="." unique_id=1091170287 instance=ExtResource("7_sword")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9247247, 0.82525134, 1.7372284)
+hold_offset = Vector3(0, 0, 0)
+weight = 2.0
