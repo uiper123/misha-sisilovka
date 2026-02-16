@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://cm7sh3nwfjv40"]
+
+[ext_resource type="Material" path="res://assets/materials/grid_dark.tres" id="1_mat"]
+[ext_resource type="PackedScene" path="res://entities/player/player.tscn" id="2_player"]
+[ext_resource type="Material" path="res://assets/materials/grid_orange.tres" id="3_orange"]
+[ext_resource type="Material" path="res://assets/materials/grid_green.tres" id="4_green"]
+[ext_resource type="Material" path="res://assets/materials/grid_purple.tres" id="5_purple"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
+
+[sub_resource type="Sky" id="Sky_1"]
+sky_material = SubResource("ProceduralSkyMaterial_1")
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 2
+sky = SubResource("Sky_1")
+tonemap_mode = 2
+
+[node name="TestWorld" type="Node3D" unique_id=1687595052]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1151520818]
+environment = SubResource("Environment_1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1203508349]
+transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 10, 0)
+shadow_enabled = true
+
+[node name="Floor" type="CSGBox3D" parent="." unique_id=914144609]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+use_collision = true
+size = Vector3(50, 1, 50)
+material = ExtResource("1_mat")
+
+[node name="Obstacle1" type="CSGBox3D" parent="." unique_id=766460347]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1, -5)
+use_collision = true
+size = Vector3(2, 2, 2)
+material = ExtResource("3_orange")
+
+[node name="Obstacle2" type="CSGCylinder3D" parent="." unique_id=957107362]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, 5)
+use_collision = true
+radius = 1.5
+sides = 16
+material = ExtResource("4_green")
+
+[node name="Wall" type="CSGBox3D" parent="." unique_id=2134073959]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -10)
+use_collision = true
+size = Vector3(10, 3, 1)
+material = ExtResource("5_purple")
+
+[node name="Ramp" type="CSGPolygon3D" parent="." unique_id=599023750]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, -5)
+use_collision = true
+polygon = PackedVector2Array(0, 0, 0, 2, 4, 0)
+depth = 2.0
+material = ExtResource("3_orange")
+
+[node name="Player" parent="." unique_id=1658991531 instance=ExtResource("2_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
