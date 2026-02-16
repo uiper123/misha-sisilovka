@@ -9,42 +9,42 @@
 [ext_resource type="Script" uid="uid://o6hqp5nyq81x" path="res://entities/player/states/dance_state.gd" id="7_dance"]
 [ext_resource type="PackedScene" path="res://gui/radial_menu.tscn" id="8_radial"]
 [ext_resource type="PackedScene" uid="uid://b1ifcnjgmjm8c" path="res://assets/models/Misha/MISHASSISISISISss.glb" id="9_model"]
-[ext_resource type="Script" path="res://entities/player/states/attack_state.gd" id="10_attack"]
-[ext_resource type="Script" path="res://entities/player/states/fall_state.gd" id="11_fall"]
+[ext_resource type="Script" uid="uid://dqk58q24xwnbv" path="res://entities/player/states/attack_state.gd" id="10_attack"]
+[ext_resource type="Script" uid="uid://re2fk0lhp6yr" path="res://entities/player/states/fall_state.gd" id="11_fall"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.19580078
-height = 1.192627
+height = 1.1589966
 
 [node name="Player" type="CharacterBody3D" unique_id=398133730]
 script = ExtResource("1_controller")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=607547998]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5708582, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.58767337, 0)
 shape = SubResource("CapsuleShape3D_1")
 
-[node name="Model" parent="." unique_id=767676613 instance=ExtResource("9_model")]
+[node name="Model" parent="." unique_id=1515195263 instance=ExtResource("9_model")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 
-[node name="Skeleton3D" parent="Model/Scene/Armature" parent_id_path=PackedInt32Array(767676613, 743868575) index="0" unique_id=1723734030]
-bones/0/position = Vector3(-0.0022614251, 0.014203608, 0.5151287)
-bones/0/rotation = Quaternion(0.65198904, 0.00078530045, 0.019292267, 0.75798255)
-bones/1/rotation = Quaternion(0.029972931, -0.018633163, -0.03714572, 0.9986865)
-bones/2/rotation = Quaternion(0.051455025, -0.00688527, 0.004209704, 0.99864274)
-bones/3/rotation = Quaternion(0.025547188, -0.008339772, 0.008646619, 0.9996014)
-bones/4/rotation = Quaternion(-0.022153527, 0.013720674, 0.025745733, 0.99932885)
-bones/6/rotation = Quaternion(0.602043, 0.41567355, -0.5305723, 0.42808056)
-bones/7/rotation = Quaternion(0.459662, 0.12322398, 0.053777415, 0.87785804)
-bones/8/rotation = Quaternion(0.00544558, -0.02855383, 0.1607926, 0.9865601)
-bones/10/rotation = Quaternion(0.63315004, -0.3787995, 0.5345168, 0.41221812)
-bones/11/rotation = Quaternion(0.43005696, 0.011870478, 0.046349537, 0.90153307)
-bones/12/rotation = Quaternion(0.004632033, 0.019723492, -0.11288801, 0.99340117)
-bones/14/rotation = Quaternion(0.05442673, -0.042463098, 0.9976007, 0.0052434015)
-bones/15/rotation = Quaternion(-0.09651965, 0.023513269, -0.0074637947, 0.9950254)
-bones/16/rotation = Quaternion(0.5003113, -0.04315137, 0.07540597, 0.8614758)
-bones/18/rotation = Quaternion(-0.13592528, 0.0048646843, 0.9880831, 0.07205939)
-bones/19/rotation = Quaternion(-0.14653544, -0.056270264, 0.012892251, 0.9875196)
-bones/20/rotation = Quaternion(0.49623635, 0.061419934, -0.049064834, 0.86462116)
+[node name="Skeleton3D" parent="Model/Scene/Armature" parent_id_path=PackedInt32Array(1515195263, 1910136443) index="0" unique_id=230136812]
+bones/0/position = Vector3(0.004239529, -0.037369072, 0.45644575)
+bones/0/rotation = Quaternion(0.6053769, -0.2069222, -0.2816629, 0.71510005)
+bones/1/rotation = Quaternion(0.16302708, 0.017769158, -0.001067445, 0.986461)
+bones/2/rotation = Quaternion(0.054967597, 0.0061347117, 0.0008288211, 0.998469)
+bones/3/rotation = Quaternion(0.058692865, 0.0052228966, 0.00483181, 0.99825084)
+bones/4/rotation = Quaternion(0.15319294, 0.03320131, -0.02790689, 0.987244)
+bones/6/rotation = Quaternion(0.69095266, 0.33272478, -0.37558535, 0.52039814)
+bones/7/rotation = Quaternion(0.16749872, -0.4781469, -0.120207496, 0.8537388)
+bones/8/rotation = Quaternion(0.0034558778, -0.0013877806, 0.8156099, 0.5785904)
+bones/10/rotation = Quaternion(0.6194651, -0.40960473, 0.39348415, 0.5419015)
+bones/11/rotation = Quaternion(0.40731338, 0.13922831, -0.36965707, 0.823447)
+bones/12/rotation = Quaternion(0.0026848612, 0.0005712025, -0.7948712, 0.60677207)
+bones/14/rotation = Quaternion(0.11968202, 0.22842933, 0.9459326, -0.19674273)
+bones/15/rotation = Quaternion(-0.42148963, 0.022179034, 0.0069625946, 0.9065352)
+bones/16/rotation = Quaternion(0.5165945, -0.10300209, -0.039937872, 0.84907347)
+bones/18/rotation = Quaternion(-0.08246094, 0.05860502, 0.9901151, 0.09714805)
+bones/19/rotation = Quaternion(-0.4649474, -0.011669751, -0.028949665, 0.8847879)
+bones/20/rotation = Quaternion(0.68633634, 0.119349346, 0.058807354, 0.71501046)
 
 [node name="CameraPivot" type="Node3D" parent="." unique_id=1916156475]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
@@ -78,7 +78,7 @@ script = ExtResource("7_dance")
 [node name="Attack" type="Node" parent="StateMachine" unique_id=1751398894]
 script = ExtResource("10_attack")
 
-[node name="Fall" type="Node" parent="StateMachine"]
+[node name="Fall" type="Node" parent="StateMachine" unique_id=913513621]
 script = ExtResource("11_fall")
 
 [node name="RadialMenu" parent="." unique_id=1186767410 instance=ExtResource("8_radial")]

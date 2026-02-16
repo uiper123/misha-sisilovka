@@ -11,7 +11,15 @@ func enter() -> void:
 			# Loop dance animations usually
 			anim_player.get_animation(current_animation).loop_mode = Animation.LOOP_LINEAR
 
-func physics_update(_delta: float) -> void:
+const GRAVITY: float = 9.8
+
+func physics_update(delta: float) -> void:
+	if not player.is_on_floor():
+		player.velocity.y -= GRAVITY * delta
+		player.move_and_slide() # Allow falling
+		# If falling too fast or long, maybe transition to fall?
+		# For now, just gravity
+	
 	# Exit dance if moving or jumping
 	if Input.get_vector("move_left", "move_right", "move_forward", "move_backward") != Vector2.ZERO:
 		transitioned.emit(self, "walk")

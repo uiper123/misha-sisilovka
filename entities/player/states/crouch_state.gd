@@ -39,11 +39,19 @@ func physics_update(delta: float) -> void:
 			if player.animation_player.current_animation != "CrouchIdle(1)":
 				player.animation_player.play("CrouchIdle(1)", 0.2)
 	
-	var direction: Vector3 = (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	if input_dir != Vector2.ZERO:
+		# Rotate Player to face camera direction
+		var cam_rot = player.camera_pivot.global_rotation.y
+		var target_angle = input_dir.angle() * -1 + cam_rot - PI/2
+		
+		# Smooth rotation
+		var current_rot = player.global_rotation.y
+		player.global_rotation.y = lerp_angle(current_rot, target_angle, 10.0 * delta)
+		
+		var direction = Vector3.FORWARD.rotated(Vector3.UP, player.global_rotation.y)
 
-	if direction:
-		player.velocity.x = direction.x * CROUCH_SPEED
-		player.velocity.z = direction.z * CROUCH_SPEED
+		player.velocity.x = move_toward(player.velocity.x, direction.x * CROUCH_SPEED, 8.0 * delta)
+		player.velocity.z = move_toward(player.velocity.z, direction.z * CROUCH_SPEED, 8.0 * delta)
 	else:
 		player.velocity.x = move_toward(player.velocity.x, 0, CROUCH_SPEED)
 		player.velocity.z = move_toward(player.velocity.z, 0, CROUCH_SPEED)

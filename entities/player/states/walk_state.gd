@@ -1,8 +1,10 @@
 extends PlayerState
 
-const WALK_SPEED: float = 5.0
-const SPRINT_SPEED: float = 8.0
+const WALK_SPEED: float = 3.5
+const SPRINT_SPEED: float = 6.5
 const GRAVITY: float = 9.8
+const ACCELERATION: float = 8.0
+const DECELERATION: float = 12.0
 
 func enter() -> void:
 	if player.animation_player:
@@ -34,11 +36,14 @@ func physics_update(delta: float) -> void:
 	if player.animation_player:
 		if is_sprinting:
 			if player.animation_player.current_animation != "UnarmedRunForward":
-				player.animation_player.play("UnarmedRunForward", 0.2)
+				player.animation_player.play("UnarmedRunForward", 0.3)
+				player.animation_player.speed_scale = 1.0 # Normal speed for run
 		else:
 			if player.animation_player.current_animation != "StrutWalking":
-				player.animation_player.play("StrutWalking", 0.2)
-	
+				player.animation_player.play("StrutWalking", 0.3)
+				# Slow down walk animation slightly to match slower movement
+				player.animation_player.speed_scale = 0.9 
+
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
 	
 	if input_dir != Vector2.ZERO:
@@ -52,11 +57,14 @@ func physics_update(delta: float) -> void:
 		
 		var direction = Vector3.FORWARD.rotated(Vector3.UP, player.global_rotation.y)
 		
-		player.velocity.x = direction.x * current_speed
-		player.velocity.z = direction.z * current_speed
+		player.velocity.x = move_toward(player.velocity.x, direction.x * current_speed, ACCELERATION * delta)
+		player.velocity.z = move_toward(player.velocity.z, direction.z * current_speed, ACCELERATION * delta)
 	else:
-		player.velocity.x = move_toward(player.velocity.x, 0, current_speed)
-		player.velocity.z = move_toward(player.velocity.z, 0, current_speed)
-		transitioned.emit(self, "idle")
+		player.velocity.x = move_toward(player.velocity.x, 0, DECELERATION * delta)
+		player.velocity.z = move_toward(player.velocity.z, 0, DECELERATION * delta)
+		
+		# Only transition to idle if stopped
+		if player.velocity.length_squared() < 0.1:
+			transitioned.emit(self, "idle")
 
 	player.move_and_slide()

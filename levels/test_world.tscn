@@ -57,5 +57,5 @@ polygon = PackedVector2Array(0, 0, 0, 2, 4, 0)
 depth = 2.0
 material = ExtResource("3_orange")
 
-[node name="Player" parent="." unique_id=1658991531 instance=ExtResource("2_player")]
+[node name="Player" parent="." unique_id=398133730 instance=ExtResource("2_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
