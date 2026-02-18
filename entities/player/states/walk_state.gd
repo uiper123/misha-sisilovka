@@ -2,6 +2,7 @@ extends PlayerState
 
 const WALK_SPEED: float = 3.5
 const SPRINT_SPEED: float = 6.5
+const NOCLIP_SPEED: float = 15.0
 const GRAVITY: float = 9.8
 const ACCELERATION: float = 8.0
 const DECELERATION: float = 12.0
@@ -11,26 +12,52 @@ func enter() -> void:
 		player.animation_player.play("Walking", 0.2)
 
 func physics_update(delta: float) -> void:
+	# Noclip mode - free flight
+	if player.collision_mask == 0:
+		_handle_noclip(delta)
+		return
+	
 	if not player.is_on_floor():
 		player.velocity.y -= GRAVITY * delta
 		if player.velocity.y < 0:
 			transitioned.emit(self, "fall")
 			return
 
+	# Only authority processes input and movement
+	if not player.is_multiplayer_authority():
+		# Puppets just apply physics
+		player.move_and_slide()
+		return
+
 	# State Transitions
 	if Input.is_action_just_pressed("jump") and player.is_on_floor():
 		transitioned.emit(self, "jump")
 		return
-	if Input.is_action_pressed("crouch"):
+	
+	# Check sprint state once for all checks
+	var is_sprinting = Input.is_action_pressed("sprint")
+	var horizontal_speed = Vector3(player.velocity.x, 0, player.velocity.z).length()
+	
+	# Slide: если бежим на спринте и нажали присед
+	# Temporarily disabled slide as per user request
+	if Input.is_action_just_pressed("crouch") and is_sprinting and horizontal_speed > 3.5:
+		# Подкат только если бежим достаточно быстро
+		# print("Transitioning to Slide! Speed: ", horizontal_speed)
+		# transitioned.emit(self, "slide")
+		# return
+		pass
+	elif Input.is_action_just_pressed("crouch"):
+		# Обычное приседание
 		transitioned.emit(self, "crouch")
 		return
+	
 	if Input.is_action_just_pressed("attack"):
 		transitioned.emit(self, "attack")
 		return
 
-	# Movement
-	var is_sprinting = Input.is_action_pressed("sprint")
-	var current_speed = SPRINT_SPEED if is_sprinting else WALK_SPEED
+	# Movement - use sprint state determined above
+	var base_speed = SPRINT_SPEED if is_sprinting else WALK_SPEED
+	var current_speed = base_speed * player.speed_multiplier
 	
 	# Animation
 	if player.animation_player:
@@ -110,3 +137,38 @@ func physics_update(delta: float) -> void:
 				if forward.dot(normal) < -0.5:
 					transitioned.emit(self, "impact")
 					return
+
+## Noclip flight mode
+func _handle_noclip(delta: float) -> void:
+	if not player.is_multiplayer_authority():
+		return
+	
+	var fly_speed = NOCLIP_SPEED * player.speed_multiplier
+	if Input.is_action_pressed("sprint"):
+		fly_speed *= 2.0
+	
+	var input_dir = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	var vertical = 0.0
+	
+	if Input.is_action_pressed("jump"):
+		vertical = 1.0
+	if Input.is_action_pressed("crouch"):
+		vertical = -1.0
+	
+	# Get camera direction for movement
+	var cam_basis = player.camera_pivot.global_transform.basis
+	var forward = -cam_basis.z
+	var right = cam_basis.x
+	
+	var direction = Vector3.ZERO
+	direction += forward * -input_dir.y  # Forward/back
+	direction += right * input_dir.x     # Left/right
+	direction.y += vertical              # Up/down
+	
+	if direction.length() > 0:
+		direction = direction.normalized()
+		player.velocity = direction * fly_speed
+	else:
+		player.velocity = player.velocity.lerp(Vector3.ZERO, delta * 10.0)
+	
+	player.global_position += player.velocity * delta

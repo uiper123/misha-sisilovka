@@ -7,35 +7,30 @@
 [ext_resource type="Material" path="res://assets/materials/grid_purple.tres" id="5_purple"]
 [ext_resource type="PackedScene" uid="uid://c5y4s3q1j4v7m" path="res://entities/objects/test_box.tscn" id="6_box"]
 [ext_resource type="PackedScene" uid="uid://bsea4s4jtko5j" path="res://entities/objects/test_sword.tscn" id="7_sword"]
-
-[ext_resource type="Script" path="res://levels/level_manager.gd" id="8_manager"]
-
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
-
-[sub_resource type="Sky" id="Sky_1"]
-sky_material = SubResource("ProceduralSkyMaterial_1")
-
-[sub_resource type="Environment" id="Environment_1"]
-background_mode = 2
-sky = SubResource("Sky_1")
-tonemap_mode = 2
+[ext_resource type="Script" uid="uid://bnkol5vaqjn0d" path="res://levels/level_manager.gd" id="8_manager"]
+[ext_resource type="Environment" uid="uid://dnra4bsw125a6" path="res://resources/world_environment.tres" id="9_env"]
 
 [node name="TestWorld" type="Node3D" unique_id=1687595052]
 script = ExtResource("8_manager")
 player_scene = ExtResource("2_player")
 
-[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("res://entities/player/player.tscn")
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=81486935]
+_spawnable_scenes = PackedStringArray("uid://b86dale43ed0x")
 spawn_path = NodePath("../Players")
 
-[node name="Players" type="Node3D" parent="."]
+[node name="Players" type="Node3D" parent="." unique_id=1065215475]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1151520818]
-environment = SubResource("Environment_1")
+environment = ExtResource("9_env")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1203508349]
-transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 10, 0)
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1203508349]
+transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 50, 0)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 1.2
+light_angular_distance = 0.5
 shadow_enabled = true
+shadow_bias = 0.03
+directional_shadow_blend_splits = true
 
 [node name="Floor" type="CSGBox3D" parent="." unique_id=914144609]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)

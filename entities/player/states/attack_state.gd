@@ -1,5 +1,7 @@
 extends PlayerState
 
+const GRAVITY: float = 9.8
+
 var attack_anims: Array[String] = ["Punching", "HookPunch", "StandingMeleeAttackDownward(1)"]
 var current_attack_index: int = 0
 var hit_targets: Array[Node] = []
@@ -38,7 +40,15 @@ func _on_animation_finished(anim_name: String) -> void:
 	transitioned.emit(self, "idle")
 
 func physics_update(delta: float) -> void:
-	# Stop movement during attack
+	# Apply gravity
+	if not player.is_on_floor():
+		player.velocity.y -= GRAVITY * delta
+		# If falling during attack, transition to fall
+		if player.velocity.y < -2.0:
+			transitioned.emit(self, "fall")
+			return
+	
+	# Stop horizontal movement during attack
 	player.velocity.x = move_toward(player.velocity.x, 0, 1.0)
 	player.velocity.z = move_toward(player.velocity.z, 0, 1.0)
 	player.move_and_slide()

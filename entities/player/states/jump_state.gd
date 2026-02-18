@@ -55,24 +55,29 @@ func physics_update(delta: float) -> void:
 		transitioned.emit(self, "fall")
 		return
 
-	# Allow air control
-	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
-	var direction: Vector3 = (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-	
-	var current_speed = AIR_SPEED
-	if Input.is_action_pressed("sprint"):
-		current_speed = SPRINT_AIR_SPEED
-	
-	if direction:
-		# Use current horizontal velocity magnitude to preserve momentum if it's higher
-		# Or just allow acceleration to sprint speed
-		player.velocity.x = move_toward(player.velocity.x, direction.x * current_speed, 0.5)
-		player.velocity.z = move_toward(player.velocity.z, direction.z * current_speed, 0.5)
+	# Only authority processes input
+	if player.is_multiplayer_authority():
+		# Allow air control
+		var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+		var direction: Vector3 = (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+		
+		var current_speed = AIR_SPEED
+		if Input.is_action_pressed("sprint"):
+			current_speed = SPRINT_AIR_SPEED
+		
+		if direction:
+			# Use current horizontal velocity magnitude to preserve momentum if it's higher
+			# Or just allow acceleration to sprint speed
+			player.velocity.x = move_toward(player.velocity.x, direction.x * current_speed, 0.5)
+			player.velocity.z = move_toward(player.velocity.z, direction.z * current_speed, 0.5)
 
-	player.move_and_slide()
+		player.move_and_slide()
 
-	if player.is_on_floor():
-		if input_dir:
-			transitioned.emit(self, "walk")
-		else:
-			transitioned.emit(self, "idle")
+		if player.is_on_floor():
+			if input_dir:
+				transitioned.emit(self, "walk")
+			else:
+				transitioned.emit(self, "idle")
+	else:
+		# Puppets just apply physics
+		player.move_and_slide()

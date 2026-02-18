@@ -6,6 +6,9 @@ extends Node
 var current_state: PlayerState
 var states: Dictionary = {}
 
+# Synchronized state name for puppets
+var current_state_name: String = ""
+
 func _ready() -> void:
 	for child in get_children():
 		if child is PlayerState:
@@ -36,18 +39,15 @@ func on_child_transition(state: PlayerState, new_state_name: String) -> void:
 	if !new_state:
 		return
 
-	# If we are the authority, we tell others to switch state
-	# We also need to tell OURSELVES (locally) immediately for responsiveness
-	# But wait, we call _perform_transition below.
+	# Only authority can initiate state transitions
+	if not is_multiplayer_authority():
+		return
 	
-	# The issue might be that rpc is called, but we also transition locally.
-	# If we are authority, we transition locally AND send RPC.
-	# The RPC receiver (clients) will transition.
-	
-	if is_multiplayer_authority():
-		rpc("change_state_rpc", new_state_name)
-	
+	# Perform transition locally first for responsiveness
 	_perform_transition(new_state)
+	
+	# Then broadcast to other clients
+	rpc("change_state_rpc", new_state_name)
 
 @rpc("any_peer", "call_remote", "reliable")
 func change_state_rpc(new_state_name: String) -> void:
@@ -74,3 +74,4 @@ func _perform_transition(new_state: PlayerState) -> void:
 
 	new_state.enter()
 	current_state = new_state
+	current_state_name = new_state.name if new_state else ""

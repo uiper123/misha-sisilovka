@@ -24,6 +24,12 @@ func physics_update(delta: float) -> void:
 	if not player.is_on_floor():
 		player.velocity.y -= GRAVITY * delta
 
+	# Only authority processes input and movement
+	if not player.is_multiplayer_authority():
+		# Puppets just apply physics
+		player.move_and_slide()
+		return
+
 	if not Input.is_action_pressed("crouch"):
 		transitioned.emit(self, "idle")
 		return

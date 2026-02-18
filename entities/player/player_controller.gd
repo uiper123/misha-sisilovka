@@ -41,12 +41,18 @@ var _spine2_bone_idx: int = -1
 var _spine2_rest: Transform3D
 var _last_position: Vector3 = Vector3.ZERO
 var _smoothed_puppet_vel: Vector3 = Vector3.ZERO
+var _attack_blocked_frames: int = 0
+var _model_initial_transform: Transform3D
 
 func _enter_tree() -> void:
 	# Ensure multiplayer authority is set before _ready
 	set_multiplayer_authority(name.to_int())
 
 func _ready() -> void:
+	# Save initial model transform (it's rotated 180° by default)
+	if model:
+		_model_initial_transform = model.transform
+	
 	if interaction_controller:
 		interaction_controller.item_picked_up.connect(_on_item_picked_up)
 		interaction_controller.item_dropped.connect(_on_item_dropped)
@@ -112,7 +118,17 @@ func _ready() -> void:
 		state_machine.states["attack"] = attack_state
 		attack_state.transitioned.connect(state_machine.on_child_transition)
 
+	# Ensure SlideState exists
+	if not state_machine.states.has("slide"):
+		var slide_state = load("res://entities/player/states/slide_state.gd").new()
+		slide_state.name = "Slide"
+		slide_state.player = self
+		state_machine.add_child(slide_state)
+		state_machine.states["slide"] = slide_state
+		slide_state.transitioned.connect(state_machine.on_child_transition)
+
 	radial_menu.animation_selected.connect(_on_dance_selected)
+	radial_menu.player = self
 
 func _setup_combat_components() -> void:
 	# Add HealthComponent if missing
@@ -253,8 +269,19 @@ func respawn_rpc() -> void:
 	global_position = _last_position + Vector3(0, 2, 0) # Simple respawn at death spot + offset
 	# ideally respawn at spawn point, but we don't have one yet.
 	
-	model.rotation = Vector3.ZERO
-	model.position = Vector3.ZERO
+	# Reset player rotation
+	rotation = Vector3.ZERO
+	
+	# Restore model's initial transform (it's rotated 180° by default)
+	if model:
+		model.transform = _model_initial_transform
+	
+	# Sync player rotation with camera
+	if is_multiplayer_authority():
+		global_rotation.y = _cam_yaw
+	
+	# Reset velocity
+	velocity = Vector3.ZERO
 	
 	# Restore Input
 	set_process_unhandled_input(true)
@@ -292,15 +319,14 @@ func _physics_process(delta: float) -> void:
 		# Smooth velocity to filter network jitter
 		_smoothed_puppet_vel = _smoothed_puppet_vel.lerp(raw_vel, delta * 15.0)
 		
-		# Only override if we are in a movement-based state (Idle, Walk, Crouch)
-		var current_state_name = ""
-		if state_machine and state_machine.current_state:
-			current_state_name = state_machine.current_state.name
+		# Use synchronized state name from state machine
+		var synced_state_name = ""
+		if state_machine:
+			synced_state_name = state_machine.current_state_name.to_lower()
 		
-		var movement_states = ["Idle", "Walk", "Jump", "Fall"] # Jump/Fall are also moving states
-		
-		# If state name is empty (not synced yet) or in allowed list
-		if current_state_name == "" or current_state_name.to_lower() in ["idle", "walk", "jump", "fall"]:
+		# Only handle animation for states where velocity-based animation makes sense
+		# States like Dance, Attack, etc. handle their own animations in enter()
+		if synced_state_name in ["idle", "walk", ""]:
 			var h_vel = Vector3(_smoothed_puppet_vel.x, 0, _smoothed_puppet_vel.z).length()
 			
 			# Increased threshold to avoid jitter-walk
@@ -312,25 +338,21 @@ func _physics_process(delta: float) -> void:
 					if animation_player.has_animation("StrutWalking") and animation_player.current_animation != "StrutWalking":
 						animation_player.play("StrutWalking", 0.3)
 			else:
-				# Only play Idle if we are NOT in jump/fall state (which have their own anims synced via state machine)
-				# Actually, State Machine syncs the state change, but physics_update in JumpState might not run for puppets?
-				# Wait, we disabled physics_process for StateMachine on puppets.
-				# So puppets ONLY get state transitions via RPC.
-				
-				# If we are in Jump/Fall state, we should let the state's enter() play the animation?
-				# But enter() plays once.
-				
-				# If we are in Idle/Walk, we control anims by speed.
-				if current_state_name.to_lower() in ["idle", "walk"] or current_state_name == "":
-					if animation_player.has_animation("Idle") and animation_player.current_animation != "Idle":
-						animation_player.play("Idle", 0.3)
+				# Idle animation
+				if animation_player.has_animation("Idle") and animation_player.current_animation != "Idle":
+					animation_player.play("Idle", 0.3)
 		
 		return
 
 	# Attack Input
+	if _attack_blocked_frames > 0:
+		_attack_blocked_frames -= 1
+	
 	if Input.is_action_just_pressed("attack"):
-		# Block attack if radial menu is open
+		# Block attack if radial menu is open or just closed
 		if radial_menu and radial_menu.visible:
+			return
+		if _attack_blocked_frames > 0:
 			return
 			
 		# Block attack if already attacking or dead

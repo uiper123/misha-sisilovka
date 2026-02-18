@@ -26,6 +26,7 @@ var options: Array[Dictionary] = [
 ]
 
 var selected_index: int = -1
+var player: Node = null
 
 func _ready() -> void:
 	visible = false
@@ -49,8 +50,12 @@ func _input(event: InputEvent) -> void:
 		queue_redraw()
 		
 	if visible and event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_LEFT and selected_index != -1:
-			emit_signal("animation_selected", options[selected_index].anim)
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			# Consume the input so attack doesn't trigger
+			get_viewport().set_input_as_handled()
+			
+			if selected_index != -1:
+				emit_signal("animation_selected", options[selected_index].anim)
 			close_menu()
 
 func open_menu() -> void:
@@ -64,6 +69,10 @@ func close_menu() -> void:
 	visible = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	get_tree().paused = false
+	
+	# Block attack for a few frames to prevent accidental hits
+	if player:
+		player._attack_blocked_frames = 5
 
 func _draw() -> void:
 	var center = get_viewport_rect().size / 2

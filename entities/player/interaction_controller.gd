@@ -549,14 +549,17 @@ func pickup_item(item: PickableItem) -> void:
 		return
 	
 	# Only authority can initiate pickup for synchronization
-	if is_multiplayer_authority():
-		# If we are the server, we just do it and tell others.
-		if multiplayer.is_server():
-			rpc("pickup_rpc", item.get_path())
-			_perform_pickup(item)
-		else:
-			# If we are a client, we tell the server "I want to pick this up"
-			rpc_id(1, "request_pickup_rpc", item.get_path())
+	if not is_multiplayer_authority():
+		return
+		
+	# Always go through server for consistency
+	if multiplayer.is_server():
+		# Server performs and broadcasts
+		_perform_pickup(item)
+		rpc("pickup_rpc", item.get_path())
+	else:
+		# Client requests from server
+		rpc_id(1, "request_pickup_rpc", item.get_path())
 
 @rpc("any_peer", "call_remote", "reliable")
 func request_pickup_rpc(item_path: NodePath) -> void:
@@ -566,24 +569,27 @@ func request_pickup_rpc(item_path: NodePath) -> void:
 		
 	var item = get_node_or_null(item_path)
 	if item and item is PickableItem:
-		# If someone else is holding it, don't pick it up
+		# Check if item is already held
 		if item.get_parent() is Marker3D or item.get_parent() is BoneAttachment3D:
 			return
+		
+		# Check if requester already has an item
+		var requester_id = multiplayer.get_remote_sender_id()
+		var requester_player = get_node_or_null("/root/" + get_tree().current_scene.name + "/Players/" + str(requester_id))
+		if requester_player and requester_player.has_node("InteractionController"):
+			var requester_controller = requester_player.get_node("InteractionController")
+			if requester_controller.held_item:
+				return
 			
-		# Broadcast pickup to all clients (including the requester)
-		rpc("pickup_rpc", item_path)
+		# Server performs and broadcasts to all
 		_perform_pickup(item)
+		rpc("pickup_rpc", item_path)
 
 @rpc("any_peer", "call_remote", "reliable")
 func pickup_rpc(item_path: NodePath) -> void:
+	# Clients receive pickup notification from server
 	var item = get_node_or_null(item_path)
 	if item and item is PickableItem:
-		# If someone else is holding it, don't pick it up?
-		# Or force steal? Let's check parent
-		if item.get_parent() is Marker3D or item.get_parent() is BoneAttachment3D:
-			# Already held
-			return
-			
 		_perform_pickup(item)
 
 func _perform_pickup(item: PickableItem) -> void:
@@ -678,15 +684,21 @@ func drop_item() -> void:
 	if not held_item:
 		return
 	
-	if is_multiplayer_authority():
-		var forward = -camera.global_transform.basis.z
-		var impulse = forward * 5.0
-		
-		if multiplayer.is_server():
-			rpc("drop_rpc", held_item.global_transform, impulse)
-			_perform_drop(held_item, held_item.global_transform, impulse)
-		else:
-			rpc_id(1, "request_drop_with_impulse_rpc", impulse, held_item.global_transform)
+	if not is_multiplayer_authority():
+		return
+	
+	# Save transform before dropping (held_item becomes null in _perform_drop)
+	var item_transform = held_item.global_transform
+	var forward = -camera.global_transform.basis.z
+	var impulse = forward * 5.0
+	
+	if multiplayer.is_server():
+		# Server performs and broadcasts
+		_perform_drop(held_item, item_transform, impulse)
+		rpc("drop_rpc", item_transform, impulse)
+	else:
+		# Client requests from server
+		rpc_id(1, "request_drop_with_impulse_rpc", impulse, item_transform)
 
 @rpc("any_peer", "call_remote", "reliable")
 func request_drop_rpc() -> void:
@@ -703,13 +715,17 @@ func request_drop_rpc() -> void:
 # Revised request_drop
 @rpc("any_peer", "call_remote", "reliable")
 func request_drop_with_impulse_rpc(impulse: Vector3, drop_transform: Transform3D) -> void:
-	if not multiplayer.is_server(): return
+	if not multiplayer.is_server(): 
+		return
+		
 	if held_item:
-		rpc("drop_rpc", drop_transform, impulse)
+		# Server performs and broadcasts
 		_perform_drop(held_item, drop_transform, impulse)
+		rpc("drop_rpc", drop_transform, impulse)
 
 @rpc("any_peer", "call_remote", "reliable")
 func drop_rpc(final_transform: Transform3D, impulse: Vector3) -> void:
+	# Clients receive drop notification from server
 	if held_item:
 		_perform_drop(held_item, final_transform, impulse)
 
